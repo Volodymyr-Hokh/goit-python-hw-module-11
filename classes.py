@@ -1,4 +1,5 @@
 from collections import UserDict
+from datetime import datetime, date
 
 
 class Field:
@@ -31,13 +32,19 @@ class Phone(Field):
     pass
 
 
+class Birthday(Field):
+    pass
+
+
 class Record:
-    def __init__(self, name=None, phones=None):
+    def __init__(self, name, phones=None, birthday=None):
         self.name = name
         self.phones = phones
+        self.birthday = birthday
 
     def __str__(self):
-        return f"{self.name.value}: {self.phones}"
+        birthday = f"birthday: {self.birthday}" if self.birthday else ""
+        return f"{self.name.value}: {self.phones}, {birthday}"
 
     def __repr__(self):
         return str(self)
@@ -63,6 +70,15 @@ class Record:
         except ValueError:
             return f"Phone number {phone} for user {self.name} not found"
 
+    def days_to_birthday(self):
+        birthday = datetime.strptime(str(self.birthday), "%d.%m.%Y").date()
+        today = date.today()
+        birthday = birthday.replace(year=today.year)
+        if birthday < today:
+            birthday = birthday.replace(year=today.year+1)
+        result = (birthday - today).days
+        return f"The birthday of user {self.name} will be in {result} days"
+
 
 class AddressBook(UserDict):
     def add_record(self, record):
@@ -73,3 +89,8 @@ class AddressBook(UserDict):
 
     def change_record(self, name, new_record):
         self[new_record.name.value] = new_record
+
+
+if __name__ == "__main__":
+    rec = Record(Name("Ivan"), Phone("12345"), Birthday("16.08.2003"))
+    print(rec.days_to_birthday())

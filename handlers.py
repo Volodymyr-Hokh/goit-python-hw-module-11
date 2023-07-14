@@ -32,10 +32,11 @@ def input_error(func):
 @set_commands("add")
 @input_error
 def add(*args):
-    """Take as input username and phone number and add them to the base.
+    """Take as input username, phone number, birthday and add them to the base.
     If username already exist add phone number to this user."""
     name = classes.Name(args[0])
     phone_number = classes.Phone(args[1])
+    birthday = classes.Birthday(args[2])
 
     data, name_exists = open_file_and_check_name(name.value)
 
@@ -44,7 +45,7 @@ def add(*args):
     elif not phone_number:
         raise IndexError
     else:
-        record = classes.Record(name, phone_number)
+        record = classes.Record(name, phone_number, birthday)
         data.add_record(record)
         msg = f"User {name} added successfully."
 
@@ -171,8 +172,8 @@ def show_all(*args):
                 phones_str = re.sub(r"\[|\]|\ ", "",
                                     row["Phone numbers"]).split(",")
                 phones = [classes.Phone(phone) for phone in phones_str]
-
-                record = classes.Record(username, phones)
+                birthday = classes.Birthday(row["Birthday"]) if row["Birthday"] != "None" else None
+                record = classes.Record(username, phones, birthday)
                 data[record.name.value] = record
 
     except FileNotFoundError:
@@ -181,10 +182,13 @@ def show_all(*args):
     all_users = ""
     for record in data.values():
         phone_numbers = ", ".join(str(phone) for phone in record.phones)
+        birthday = ""
+        if record.birthday:
+            birthday = f", Birthday: {record.birthday}"
         if phone_numbers:
-            all_users += f"{record.name}: {phone_numbers}\n"
+            all_users += f"Name:{record.name}, Phones: {phone_numbers}{birthday}\n"
         else:
-            all_users += f"{record.name}: No phone numbers\n"
+            all_users += f"{record.name}: No phone numbers{birthday}\n"
     return all_users
 
 
