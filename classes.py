@@ -1,39 +1,95 @@
 from collections import UserDict
 from datetime import datetime, date
+import re
+
+
+class WrongPhone(Exception):
+    pass
+
+
+class WrongDate(Exception):
+    pass
 
 
 class Field:
     def __init__(self, value, required=False):
-        self.value = value
+        self._value = value
         self.required = required
         if required and not value:
             raise ValueError("Required field is not provided.")
 
     def __str__(self):
-        return str(self.value)
+        return str(self._value)
 
     def __repr__(self):
         return str(self)
 
     def __eq__(self, other):
         if self.__class__ == other.__class__:
-            return self.value == other.value
+            return self._value == other.value
         return False
 
     def __hash__(self):
-        return hash(self.value)
+        return hash(self._value)
+    
+    
 
 
 class Name(Field):
-    pass
+    @property
+    def value(self):
+        return self._value
+    
+    @value.setter
+    def value(self, val):
+        self._value = val
+        
 
 
 class Phone(Field):
-    pass
+
+    @staticmethod
+    def is_valid_phone(phone):
+        match = re.search(r"^\+?[1-9][\d]{11}$", phone)
+        return bool(match)
+
+
+    @property
+    def value(self):
+        return self._value
+    
+    @value.setter
+    def value(self, val):
+        if self.is_valid_phone(val):
+            self._value = val
+        else:
+            raise WrongPhone("You tried to enter an invalid phone number. " 
+                             "Please check the value and try again")
+
 
 
 class Birthday(Field):
-    pass
+
+    @staticmethod
+    def is_valid_date(date):
+        try:
+            datetime.strptime(str(date), "%d.%m.%Y")
+            return True
+        except ValueError:
+            return False
+
+
+    @property
+    def value(self):
+        return self._value
+    
+    @value.setter
+    def value(self, val):
+        if self.is_valid_date(val):
+            self._value = val
+        else:
+            raise WrongDate("Invalid date. Please enter birthday in format 'DD.MM.YYYY'.")
+
 
 
 class Record:
@@ -71,13 +127,18 @@ class Record:
             return f"Phone number {phone} for user {self.name} not found"
 
     def days_to_birthday(self):
-        birthday = datetime.strptime(str(self.birthday), "%d.%m.%Y").date()
+        try:
+            birthday = datetime.strptime(str(self.birthday), "%d.%m.%Y").date()
+        except ValueError:
+            return f"No birthday for user {self.name.value}"
+        
         today = date.today()
         birthday = birthday.replace(year=today.year)
         if birthday < today:
             birthday = birthday.replace(year=today.year+1)
         result = (birthday - today).days
-        return f"The birthday of user {self.name} will be in {result} days"
+        birthday_str = birthday.strftime("%d %B")
+        return f"The birthday of user {self.name} will be in {result} days, {birthday_str}"
 
 
 class AddressBook(UserDict):
@@ -92,5 +153,5 @@ class AddressBook(UserDict):
 
 
 if __name__ == "__main__":
-    rec = Record(Name("Ivan"), Phone("12345"), Birthday("16.08.2003"))
-    print(rec.days_to_birthday())
+   result = Phone.is_valid_phone("+380548619279")
+   print(result)

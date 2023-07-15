@@ -23,8 +23,12 @@ def input_error(func):
     def inner(*args):
         try:
             return func(*args)
-        except (IndexError, ValueError):
-            return "Enter all require arguments please.\nTo see more info type 'help'."
+        # except (IndexError, ValueError):
+        #     return "Enter all require arguments please.\nTo see more info type 'help'."
+        except classes.WrongPhone:
+            return "You tried to enter an invalid phone number. Please check the value and try again"
+        except classes.WrongDate:
+            return "Invalid date. Please enter birthday in format 'DD.MM.YYYY'."
     inner.__doc__ = func.__doc__
     return inner
 
@@ -35,8 +39,16 @@ def add(*args):
     """Take as input username, phone number, birthday and add them to the base.
     If username already exist add phone number to this user."""
     name = classes.Name(args[0])
-    phone_number = classes.Phone(args[1])
-    birthday = classes.Birthday(args[2])
+    if classes.Phone.is_valid_phone(args[1]):
+        phone_number = classes.Phone(args[1])
+    else:
+        raise classes.WrongPhone
+    birthday = None
+    if len(args) > 2:
+        if classes.Birthday.is_valid_date(args[2]):
+            birthday = classes.Birthday(args[2])
+        else:
+            raise classes.WrongDate
 
     data, name_exists = open_file_and_check_name(name.value)
 
@@ -53,6 +65,21 @@ def add(*args):
     return msg
 
 
+@set_commands("birthday")
+@input_error
+def days_to_birthday_handler(*args):
+    """Take as input username and show the number of days until his birthday"""
+    name = classes.Name(args[0])
+    data, name_exists = open_file_and_check_name(name.value)
+
+    if not name_exists:
+        return f"User {name} not found"
+    
+    return data[name.value].days_to_birthday()
+    
+    
+
+
 @set_commands("change")
 @input_error
 def change(*args):
@@ -60,7 +87,10 @@ def change(*args):
     and changes the corresponding data."""
     name = classes.Name(args[0])
     old_phone = classes.Phone(args[1])
-    new_phone = classes.Phone(args[2])
+    if classes.Phone.is_valid_phone(args[2]):
+        new_phone = classes.Phone(args[2])
+    else:
+        raise classes.WrongPhone
 
     data, name_exists = open_file_and_check_name(name.value)
 
@@ -183,7 +213,7 @@ def show_all(*args):
     for record in data.values():
         phone_numbers = ", ".join(str(phone) for phone in record.phones)
         birthday = ""
-        if record.birthday:
+        if record.birthday.value:
             birthday = f", Birthday: {record.birthday}"
         if phone_numbers:
             all_users += f"Name:{record.name}, Phones: {phone_numbers}{birthday}\n"
