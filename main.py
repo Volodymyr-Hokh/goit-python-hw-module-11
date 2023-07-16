@@ -1,10 +1,10 @@
 import logging
 import re
-import types
 
 from fuzzywuzzy import fuzz, process
 import readline
 
+import classes
 from handlers import commands
 
 
@@ -54,10 +54,13 @@ def main():
         result = parse_command(user_input)
 
         if result:
-            if isinstance(result, types.GeneratorType):
+            if isinstance(result, classes.AddressBook):
                 for page in result:
                     commands["clear"]()
                     print("\n".join([str(i) for i in page]))
+                    user_input = input("Press 'q' to quit. Press any key to see the next page: ")
+                    if user_input.lower() == "q":
+                        break
             else:
                 print(result)
 

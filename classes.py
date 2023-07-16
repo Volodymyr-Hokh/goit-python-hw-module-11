@@ -146,31 +146,20 @@ class AddressBook(UserDict):
         self[new_record.name.value] = new_record
 
     def __iter__(self):
-        self._index = 0
-        return self.values()
+        self.current_page = 1
+        self.page_size = 2 #=========================CHANGE=============================
+        self.start_index = (self.current_page - 1) * self.page_size
+        self.end_index = self.start_index + self.page_size
+        return self
     
     def __next__(self):
-        if self._index < len(self.contacts):
-            contact = self.contacts[self._index]
-            self._index += 1
-            return contact
-        else:
+        if self.start_index >= len(self.data):
             raise StopIteration
         
-    def paginate_records(self, page_size=10):
-        current_page = 1
-        start_index = (current_page - 1) * page_size
-        end_index = start_index + page_size
+        page_records = list(self.data.values())[self.start_index:self.end_index]
+        self.start_index = self.end_index
+        self.end_index = self.start_index + self.page_size
+        self.current_page += 1
 
-        while start_index < len(self.data):
-            
-            page_records = list(self.data.values())[start_index:end_index]
-            yield page_records
-
-            user_input = input("Press 'n' to see the next page. Press 'q' to quit: ")
-            if user_input.lower() == "q":
-                break
-            elif user_input.lower() == "n":
-                current_page += 1
-                start_index = (current_page - 1) * page_size
-                end_index = start_index + page_size
+        return page_records
+    
