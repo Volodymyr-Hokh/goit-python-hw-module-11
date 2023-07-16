@@ -147,7 +147,7 @@ class AddressBook(UserDict):
 
     def __iter__(self):
         self.current_page = 1
-        self.page_size = 2 #=========================CHANGE=============================
+        self.page_size = 10
         self.start_index = (self.current_page - 1) * self.page_size
         self.end_index = self.start_index + self.page_size
         return self

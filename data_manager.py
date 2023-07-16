@@ -30,7 +30,7 @@ def open_file_and_check_name(name: str) -> tuple:
     return (data, name_exists)
 
 
-def write_to_csv(data: classes.AddressBook, file_path: str):
+def write_to_csv(ab: classes.AddressBook, file_path: str):
     fieldnames = ["Name", "Phone numbers", "Birthday"]
 
     with open(file_path, "w", newline="") as file:
@@ -38,7 +38,7 @@ def write_to_csv(data: classes.AddressBook, file_path: str):
 
         writer.writeheader()
 
-        for record in data.values():
+        for record in ab.data.values():
             writer.writerow(
                 {"Name": record.name,
                  "Phone numbers": record.phones,
