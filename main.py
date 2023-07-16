@@ -1,5 +1,6 @@
 import logging
 import re
+import types
 
 from fuzzywuzzy import fuzz, process
 import readline
@@ -53,7 +54,12 @@ def main():
         result = parse_command(user_input)
 
         if result:
-            print(result)
+            if isinstance(result, types.GeneratorType):
+                for page in result:
+                    commands["clear"]()
+                    print("\n".join([str(i) for i in page]))
+            else:
+                print(result)
 
 
 if __name__ == "__main__":

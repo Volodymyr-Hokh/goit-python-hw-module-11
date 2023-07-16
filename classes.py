@@ -33,8 +33,6 @@ class Field:
         return hash(self._value)
     
     
-
-
 class Name(Field):
     @property
     def value(self):
@@ -45,14 +43,12 @@ class Name(Field):
         self._value = val
         
 
-
 class Phone(Field):
 
     @staticmethod
     def is_valid_phone(phone):
         match = re.search(r"^\+?[1-9][\d]{11}$", phone)
         return bool(match)
-
 
     @property
     def value(self):
@@ -67,7 +63,6 @@ class Phone(Field):
                              "Please check the value and try again")
 
 
-
 class Birthday(Field):
 
     @staticmethod
@@ -77,7 +72,6 @@ class Birthday(Field):
             return True
         except ValueError:
             return False
-
 
     @property
     def value(self):
@@ -91,7 +85,6 @@ class Birthday(Field):
             raise WrongDate("Invalid date. Please enter birthday in format 'DD.MM.YYYY'.")
 
 
-
 class Record:
     def __init__(self, name, phones=None, birthday=None):
         self.name = name
@@ -99,8 +92,9 @@ class Record:
         self.birthday = birthday
 
     def __str__(self):
-        birthday = f"birthday: {self.birthday}" if self.birthday else ""
-        return f"{self.name.value}: {self.phones}, {birthday}"
+        phones = ", ".join([str(phone) for phone in self.phones])
+        birthday = f"Birthday: {self.birthday}" if self.birthday.value else ""
+        return f"{self.name.value}: {phones}. {birthday}"
 
     def __repr__(self):
         return str(self)
@@ -151,7 +145,32 @@ class AddressBook(UserDict):
     def change_record(self, name, new_record):
         self[new_record.name.value] = new_record
 
+    def __iter__(self):
+        self._index = 0
+        return self.values()
+    
+    def __next__(self):
+        if self._index < len(self.contacts):
+            contact = self.contacts[self._index]
+            self._index += 1
+            return contact
+        else:
+            raise StopIteration
+        
+    def paginate_records(self, page_size=10):
+        current_page = 1
+        start_index = (current_page - 1) * page_size
+        end_index = start_index + page_size
 
-if __name__ == "__main__":
-   result = Phone.is_valid_phone("+380548619279")
-   print(result)
+        while start_index < len(self.data):
+            
+            page_records = list(self.data.values())[start_index:end_index]
+            yield page_records
+
+            user_input = input("Press 'n' to see the next page. Press 'q' to quit: ")
+            if user_input.lower() == "q":
+                break
+            elif user_input.lower() == "n":
+                current_page += 1
+                start_index = (current_page - 1) * page_size
+                end_index = start_index + page_size

@@ -23,8 +23,8 @@ def input_error(func):
     def inner(*args):
         try:
             return func(*args)
-        # except (IndexError, ValueError):
-        #     return "Enter all require arguments please.\nTo see more info type 'help'."
+        except (IndexError, ValueError):
+            return "Enter all require arguments please.\nTo see more info type 'help'."
         except classes.WrongPhone:
             return "You tried to enter an invalid phone number. Please check the value and try again"
         except classes.WrongDate:
@@ -78,8 +78,6 @@ def days_to_birthday_handler(*args):
     return data[name.value].days_to_birthday()
     
     
-
-
 @set_commands("change")
 @input_error
 def change(*args):
@@ -199,31 +197,48 @@ def show_all(*args):
             data = classes.AddressBook()
             for row in reader:
                 username = classes.Name(row["Name"])
-                phones_str = re.sub(r"\[|\]|\ ", "",
-                                    row["Phone numbers"]).split(",")
+                phones_str = re.sub(r"\[|\]|\ ", "", row["Phone numbers"]).split(",")
                 phones = [classes.Phone(phone) for phone in phones_str]
-                birthday = classes.Birthday(row["Birthday"]) if row["Birthday"] != "None" else None
+                birthday = classes.Birthday(row["Birthday"])
                 record = classes.Record(username, phones, birthday)
                 data[record.name.value] = record
 
     except FileNotFoundError:
         data = classes.AddressBook()
 
-    all_users = ""
-    for record in data.values():
-        phone_numbers = ", ".join(str(phone) for phone in record.phones)
-        birthday = ""
-        if record.birthday.value:
-            birthday = f", Birthday: {record.birthday}"
-        if phone_numbers:
-            all_users += f"Name:{record.name}, Phones: {phone_numbers}{birthday}\n"
-        else:
-            all_users += f"{record.name}: No phone numbers{birthday}\n"
-    return all_users
-
+    return data.paginate_records()
+        
 
 @set_commands("exit", "close", "good bye")
 @input_error
 def exit(*args):
     """Interrupt program."""
     sys.exit(0)
+
+
+
+
+if __name__ == "__main__":
+    def show_all_test(*args):
+        try:
+            with open("data.csv") as file:
+                reader = csv.DictReader(file)
+                data = classes.AddressBook()
+                for row in reader:
+                    username = classes.Name(row["Name"])
+                    phones_str = re.sub(r"\[|\]|\ ", "", row["Phone numbers"]).split(",")
+                    phones = [classes.Phone(phone) for phone in phones_str]
+                    birthday = classes.Birthday(row["Birthday"])
+                    record = classes.Record(username, phones, birthday)
+                    data[record.name.value] = record
+
+        except FileNotFoundError:
+            data = classes.AddressBook()
+
+        return data.paginate_records(2)
+
+    # Ітерування результату генератора
+    data_generator = show_all_test()
+    for page_records in data_generator:
+        print(page_records)
+
