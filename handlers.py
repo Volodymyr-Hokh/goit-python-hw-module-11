@@ -192,7 +192,7 @@ def phone(*args):
 def show_all(*args):
     """Show all users."""
     try:
-        with open("data.csv") as file:
+        with open("data.csv", encoding="utf-8") as file:
             reader = csv.DictReader(file)
             data = classes.AddressBook()
             for row in reader:

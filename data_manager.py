@@ -9,7 +9,7 @@ def open_file_and_check_name(name: str) -> tuple:
         AddressBook in which key is the name and value is the phone numbers 
         and bool value True if name already exist in dataframe, False otherwise."""
     try:
-        with open("data.csv") as file:
+        with open("data.csv", encoding="utf-8") as file:
             reader = csv.DictReader(file)
             data = classes.AddressBook()
             for row in reader:
