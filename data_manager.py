@@ -33,7 +33,7 @@ def open_file_and_check_name(name: str) -> tuple:
 def write_to_csv(ab: classes.AddressBook, file_path: str):
     fieldnames = ["Name", "Phone numbers", "Birthday"]
 
-    with open(file_path, "w", newline="") as file:
+    with open(file_path, "w", newline="", encoding="utf-8") as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
 
         writer.writeheader()
